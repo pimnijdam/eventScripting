@@ -113,6 +113,7 @@ class UserEvent(event.Event):
         self._refreshInterval = None
         self._fromDate = None
         self._description = None
+        self._inputSensorId = None
 
     ### Event builder methods ###    
     def sensors(self, names, allowMulti=False):
@@ -161,7 +162,7 @@ class UserEvent(event.Event):
         else:
             fromDate = self._fromDate
 
-	if self._inputSensorId:
+	if self._inputSensorId is not None:
             sensorId = self._inputSensorId
         elif self._user._isMe:
             sensorId = getSensorId(self._user._session.api, self._sensors[0], self._deviceType, self._description)
