@@ -70,7 +70,7 @@ def main():
     credentials = json.load(open("credentials.json"))
     api = senseapi.SenseAPI()
     if not api.AuthenticateSessionId(credentials["me"]["user"], senseapi.MD5Hash(credentials["me"]["password"])):
-        print "Couldn't login: ".format(api.getResponse())
+        print("Couldn't login: ".format(api.getResponse()))
         return
     session = commonsense.Session(api)
     me = session.me()

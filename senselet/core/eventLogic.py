@@ -2,9 +2,10 @@
 Define the logic operators to combine multiple event rules.
 """
 
-import Queue, threading
+import queue, threading
 from operator import itemgetter
-import event
+from . import event
+from functools import reduce
 
 def andEvent(self, other):
     def andInputs():
@@ -37,7 +38,7 @@ Combines multiple generators into a single tuples string. Upon an input the gene
 """        
 def combineGenerators(genlist):
     n=len(genlist)
-    dataQueue = [Queue.Queue() for i in range(n)]
+    dataQueue = [queue.Queue() for i in range(n)]
     values = [(None,None) for i in range(n)]
     buf = [(None,None) for i in range(n)]
     timestamps = [0 for i in range(n)]

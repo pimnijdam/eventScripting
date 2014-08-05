@@ -10,7 +10,7 @@ import senselet.events.senseapi
 import time
 import datetime
 from senselet.core import event, eventExpression
-import Queue
+import queue
 from ssl import SSLError
 import copy
 import operator
@@ -21,7 +21,7 @@ class DataUploader:
     def __init__(self, api, interval=30):
         self.api = api
         self.interval = interval
-        self.dataQueue = Queue.Queue()
+        self.dataQueue = queue.Queue()
         threading.Thread(target=self.run).start()
         
     def addData(self, sensorId, date, value):
@@ -33,7 +33,7 @@ class DataUploader:
         while size < self.MAX_UPLOAD_SIZE:
             try:
                 (sensorId, date, value) = self.dataQueue.get_nowait()
-            except Queue.Empty:
+            except queue.Empty:
                 break
             if sensorId not in sensorData:
                 sensorData[sensorId] = []
@@ -45,14 +45,14 @@ class DataUploader:
         parameters = {"sensors":[]}
         for sensorId in sensorData:
             parameters["sensors"].append({"sensor_id":sensorId, "data":sensorData[sensorId]})
-        print "Posting {} sensors to CS!".format(len(sensorData))
+        print("Posting {} sensors to CS!".format(len(sensorData)))
         errorCount = 0
         while not self.api.SensorsDataPost(parameters):
-            print "Error uploading to sensor. Status code: {}. Response: {}".format(self.api.getResponseStatus(), self.api.getResponse())
+            print("Error uploading to sensor. Status code: {}. Response: {}".format(self.api.getResponseStatus(), self.api.getResponse()))
             time.sleep(30)
             #give up after 3 attempts, we lose the data and move on...
             if errorCount > 3:
-                print "Giving up... discarding this data and move on"
+                print("Giving up... discarding this data and move on")
                 break
         
     def run(self):
@@ -61,7 +61,7 @@ class DataUploader:
                 try:
                     self.upload()
                 except SSLError:
-                    print "SSLError."
+                    print("SSLError.")
             time.sleep(self.interval)
 
 
@@ -162,7 +162,7 @@ class UserEvent(event.Event):
         else:
             fromDate = self._fromDate
 
-	if self._inputSensorId is not None:
+        if self._inputSensorId is not None:
             sensorId = self._inputSensorId
         elif self._user._isMe:
             sensorId = getSensorId(self._user._session.api, self._sensors[0], self._deviceType, self._description)
@@ -190,13 +190,13 @@ def getSensorId(api, sensorName, deviceType=None, description=None, userName=Non
     if not api.SensorsGet({'per_page':1000, 'details':'full', 'order':'asc', "owned":owned}):
             raise Exception("Couldn't get sensors. {}".format(api.getResponse()))
     sensors = json.loads(api.getResponse())['sensors']
-    correctSensors = filter(lambda x: x['name'] == sensorName, sensors)
+    correctSensors = [x for x in sensors if x['name'] == sensorName]
     if deviceType:
-        correctSensors = filter(lambda x: "device" in x and x['device']['type'] == deviceType, correctSensors)
+        correctSensors = [x for x in correctSensors if "device" in x and x['device']['type'] == deviceType]
     if description:
-        correctSensors = filter(lambda x: "device_type" in x and x["device_type"] == description, correctSensors)
+        correctSensors = [x for x in correctSensors if "device_type" in x and x["device_type"] == description]
     if userName:
-        correctSensors = filter(lambda x: "owner" in x and x["owner"]["username"] == userName, correctSensors)
+        correctSensors = [x for x in correctSensors if "owner" in x and x["owner"]["username"] == userName]
     if len(correctSensors) == 0:
         raise ValueError("Sensor {} not found!".format(sensorName))
     
@@ -211,7 +211,7 @@ def getSensorId(api, sensorName, deviceType=None, description=None, userName=Non
                     ld = data[-1]["date"]
             return ld
         sensorDate = {x:lastDate(x) for x in ids}
-	sensorId = max(sensorDate.iteritems(), key=operator.itemgetter(1))[0]
+        sensorId = max(iter(sensorDate.items()), key=operator.itemgetter(1))[0]
     else:
         sensorId = ids[-1]
 
@@ -227,8 +227,8 @@ def getSensorData(api, sensorId, fromDate=None, refreshInterval=None):
     first = True
     while (True):
         if not api.SensorDataGet(sensorId, par): #TODO check status code
-            print "Error: " + repr(api.getResponse());
-            print "Waiting 30 seconds and try again"
+            print("Error: " + repr(api.getResponse()));
+            print("Waiting 30 seconds and try again")
             time.sleep(30)
             continue
         response = json.loads(api.getResponse())

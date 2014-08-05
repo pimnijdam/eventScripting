@@ -15,7 +15,7 @@ from operator import itemgetter
 credentials = json.load(open("credentials.json"))
 api = senseapi.SenseAPI()
 if not api.AuthenticateSessionId(credentials["me"]["user"], senseapi.MD5Hash(credentials["me"]["password"])):
-    print "Couldn't login: ".format(api.getResponse())
+    print("Couldn't login: ".format(api.getResponse()))
 session = commonsense.Session(api)
 me = session.me()
 
@@ -32,7 +32,7 @@ def toWidget(date,value, widget):
 def karmaToWidgetList(date, value, widget):
     items = []
     x=json.loads(value)
-    x = sorted(x.iteritems(), key=itemgetter(1), reverse=True)
+    x = sorted(iter(x.items()), key=itemgetter(1), reverse=True)
     for (user, karma) in x:
         items.append({"label":user,"value":karma})
     body = {"auth_token": oauthToken, "items": items}

@@ -4,7 +4,7 @@ Created on Feb 16, 2013
 @author: pim
 '''
 import threading
-import Queue
+import queue
 import datetime
 import traceback
 """
@@ -46,7 +46,7 @@ class Event(object):
         structure =  "{}: {}".format("Event",origin)
         for (stage, args, kwargs) in self._pipeline:
             structure += " -> {}()".format(stage.__name__)
-        print structure
+        print(structure)
 
     def _run(self):
         if self.inputData is None:
@@ -58,8 +58,8 @@ class Event(object):
                 try:
                     newValue = stage(date,value,*args, **kwargs)
                 except Exception as e:
-                    print "Exception in function {}:".format(stage.__name__)
-                    print traceback.format_exc()
+                    print("Exception in function {}:".format(stage.__name__))
+                    print(traceback.format_exc())
                     if self.continueOnException:
                         break #continue with the next data point
                     raise
@@ -81,7 +81,7 @@ class Event(object):
     Get values, reusing the run method, at the cost of an extra thread. 
     """
     def _never_stopping_values(self):
-        q = Queue.Queue()
+        q = queue.Queue()
         def queueWriter(date,value,state):
             q.put((date,value))
             return value
@@ -104,8 +104,8 @@ class Event(object):
                 try:
                     newValue = stage(date,value,*args, **kwargs)
                 except Exception as e:
-                    print "Exception in function {}:".format(stage.__name__)
-                    print traceback.format_exc()
+                    print("Exception in function {}:".format(stage.__name__))
+                    print(traceback.format_exc())
                     if self.continueOnException:
                         break #continue with the next data point
                     raise
@@ -149,7 +149,7 @@ def eventMethod(name):
         def wrapped_f(self, *args,**kwargs):
             f(self, *args,**kwargs)
             return self
-        print "Declaring method Event.{}".format(name)
+        print("Declaring method Event.{}".format(name))
         setattr(Event, name, wrapped_f)
         return wrapped_f
     return wrap
@@ -177,7 +177,7 @@ def eventExpression(name):
             self.attach(f,*args, **kwargs)
             return self
         setattr(Event, name, wrapped_f)
-        print "Declaring expression Event.{}".format(name)
+        print("Declaring expression Event.{}".format(name))
         return wrapped_f
     return wrap
 
@@ -207,7 +207,7 @@ def eventAction(name):
             self.attach(returnValueWrapper)
             return self
         setattr(Event, name, wrapped_f)
-        print "Declaring action Event.{}".format(name)
+        print("Declaring action Event.{}".format(name))
         return wrapped_f
     return wrap
 
@@ -298,12 +298,12 @@ def do(self, func, *args, **kwargs):
 
 @eventAction("printMsg")
 def printMsg(msg):
-    print msg
+    print(msg)
 
 #helps to debug
 @eventExpression("printValue")
 def printValue(date, value):
-    print "{}:{}".format(date, value)
+    print("{}:{}".format(date, value))
     return value
 
 @eventMethod("accumulate")

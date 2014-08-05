@@ -23,10 +23,10 @@ class Mailer:
         smtpserver.ehlo
         smtpserver.login(self.__user, self.__password)
         header = 'To:' + to + '\n' + 'From: ' + self.__user  + '\n' + 'Subject:' + subject + '\n'
-        print header
+        print(header)
         msg = header + '\n' + message + ' \n\n'
         smtpserver.sendmail(self.__user, to, msg)
-        print 'done!'
+        print('done!')
         smtpserver.close()
 
 if __name__ == '__main__':

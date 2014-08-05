@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import md5, urllib, httplib, json, socket, oauth.oauth as oauth, urlparse, string
+import md5, urllib.request, urllib.parse, urllib.error, http.client, json, socket, oauth.oauth as oauth, urllib.parse, string
 
 class SenseAPI:
 	"""
@@ -158,7 +158,7 @@ class SenseAPI:
 		elif self.__authentication__ == 'authenticating_oauth':
 			heads.update({"Content-type": "application/x-www-form-urlencoded", "Accept":"*"})
 			if not parameters is None:
-				http_url = '{0}?{1}'.format(url, urllib.urlencode(parameters))
+				http_url = '{0}?{1}'.format(url, urllib.parse.urlencode(parameters))
 
 		elif self.__authentication__ == 'authenticating_session_id':
 			heads.update({"Content-type": "application/json", "Accept":"*"})
@@ -177,7 +177,7 @@ class SenseAPI:
 			if not parameters is None:
 				if method == 'GET' or method == 'DELETE':
 					heads.update({"Content-type": "application/x-www-form-urlencoded", "Accept":"*"})
-					http_url = '{0}?{1}'.format(url, urllib.urlencode(parameters))
+					http_url = '{0}?{1}'.format(url, urllib.parse.urlencode(parameters))
 				else:
 					heads.update({"Content-type": "application/json", "Accept":"*"})
 					body = json.dumps(parameters)
@@ -187,7 +187,7 @@ class SenseAPI:
 			if not parameters is None:
 				if method == 'GET' or method == 'DELETE':
 					heads.update({"Content-type": "application/x-www-form-urlencoded", "Accept":"*"})
-					http_url = '{0}?{1}'.format(url, urllib.urlencode(parameters))
+					http_url = '{0}?{1}'.format(url, urllib.parse.urlencode(parameters))
 				else:
 					heads.update({"Content-type": "application/json", "Accept":"*"})
 					body = json.dumps(parameters)
@@ -198,7 +198,7 @@ class SenseAPI:
 			parameters['API_KEY'] = self.__api_key__
 			if method == 'GET' or method == 'DELETE':
 				heads.update({"Content-type": "application/x-www-form-urlencoded", "Accept":"*"})
-				http_url = '{0}?{1}'.format(url, urllib.urlencode(parameters))
+				http_url = '{0}?{1}'.format(url, urllib.parse.urlencode(parameters))
 			else:
 				heads.update({"Content-type": "application/json", "Accept":"*"})
 				body = json.dumps(parameters)
@@ -207,12 +207,12 @@ class SenseAPI:
 			self.__status__ = 418
 			return False
 
-		print heads
+		print(heads)
 
 		if self.__use_https__ and not self.__authentication__ == 'authenticating_oauth' and not self.__authentication__ == 'oauth':
-			connection 	= httplib.HTTPSConnection(self.__server_url__, timeout=60)
+			connection 	= http.client.HTTPSConnection(self.__server_url__, timeout=60)
 		else:
-			connection 	= httplib.HTTPConnection(self.__server_url__, timeout=60)
+			connection 	= http.client.HTTPConnection(self.__server_url__, timeout=60)
 			
 		try:
 			connection.request(method, http_url, body, heads);
@@ -231,20 +231,20 @@ class SenseAPI:
 		
 		for h in resp_headers:
 			self.__headers__.update({h[0]:h[1]})
-		self.__headers__ = dict(zip(map(string.lower, self.__headers__.keys()), self.__headers__.values()))
+		self.__headers__ = dict(list(zip(list(map(string.lower, list(self.__headers__.keys()))), list(self.__headers__.values()))))
 
 		
 		if self.__verbose__:
-			print "===================CALL==================="
-			print "Call: {0} {1}".format(method, http_url)
-			print "Server: {0}".format(self.__server__)
-			print "Headers: {0}".format(heads)
-			print "Body: {0}".format(body)
-			print "==================RESPONSE================"
-			print "Status: {0}".format(self.__status__)
-			print "Headers: {0}".format(self.__headers__)
-			print "Response: {0}".format(self.__response__)
-			print "==========================================\n"
+			print("===================CALL===================")
+			print("Call: {0} {1}".format(method, http_url))
+			print("Server: {0}".format(self.__server__))
+			print("Headers: {0}".format(heads))
+			print("Body: {0}".format(body))
+			print("==================RESPONSE================")
+			print("Status: {0}".format(self.__status__))
+			print("Headers: {0}".format(self.__headers__))
+			print("Response: {0}".format(self.__response__))
+			print("==========================================\n")
 		
 		if self.__status__ == 200 or self.__status__ == 201 or self.__status__ == 302:
 			return True
@@ -402,12 +402,12 @@ class SenseAPI:
 		oauth_request.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), self.__oauth_consumer__, None)		
 		
 		parameters = []
-		for key in oauth_request.parameters.iterkeys():
+		for key in oauth_request.parameters.keys():
 			parameters.append((key, oauth_request.parameters[key]))
 		parameters.sort()
 
 		if self.__SenseApiCall__('/oauth/request_token', 'GET', parameters=parameters):
-			response = urlparse.parse_qs(self.__response__)
+			response = urllib.parse.parse_qs(self.__response__)
 			self.__oauth_token__ = oauth.OAuthToken(response['oauth_token'][0], response['oauth_token_secret'][0])
 			return True
 		else:
@@ -434,12 +434,12 @@ class SenseAPI:
 		oauth_request.sign_request(oauth.OAuthSignatureMethod_HMAC_SHA1(), self.__oauth_consumer__, self.__oauth_token__)
 		
 		parameters = []
-		for key in oauth_request.parameters.iterkeys():
+		for key in oauth_request.parameters.keys():
 			parameters.append((key, oauth_request.parameters[key]))
 		parameters.sort()
 		
 		if self.__SenseApiCall__('/oauth/access_token', 'GET', parameters=parameters):
-			response = urlparse.parse_qs(self.__response__)
+			response = urllib.parse.parse_qs(self.__response__)
 			self.__oauth_token__ = oauth.OAuthToken(response['oauth_token'][0], response['oauth_token_secret'][0])
 			self.__setAuthenticationMethod__('oauth')
 			return True
@@ -466,7 +466,7 @@ class SenseAPI:
 		
 		if self.__SenseApiCall__('/oauth/provider_authorize', 'POST', parameters=parameters):
 			if self.__status__ == 302:
-				response = urlparse.parse_qs(urlparse.urlparse(self.__headers__['location'])[4])
+				response = urllib.parse.parse_qs(urllib.parse.urlparse(self.__headers__['location'])[4])
 				verifier = response['oauth_verifier'][0]
 				self.__oauth_token__.set_verifier(verifier)
 				return True
@@ -687,7 +687,7 @@ class SenseAPI:
 		"""
 		ns = "default" if namespace is None else namespace
 		parameters['namespace'] = ns
-		if self.__SenseApiCall__("/sensors/find.json?{0}".format(urllib.urlencode(parameters)), "POST", parameters=filters):
+		if self.__SenseApiCall__("/sensors/find.json?{0}".format(urllib.parse.urlencode(parameters)), "POST", parameters=filters):
 			return True
 		else:
 			self.__error__ = "api call unsuccessful"
@@ -706,7 +706,7 @@ class SenseAPI:
 		"""
 		ns = "default" if namespace is None else namespace
 		parameters['namespace'] = ns
-		if self.__SenseApiCall__("/groups/{0}/sensors/find.json?{1}".format(group_id, urllib.urlencode(parameters)), "POST", parameters=filters):
+		if self.__SenseApiCall__("/groups/{0}/sensors/find.json?{1}".format(group_id, urllib.parse.urlencode(parameters)), "POST", parameters=filters):
 			return True
 		else:
 			self.__error__ = "api call unsuccessful"
