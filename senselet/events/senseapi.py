@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import md5, urllib.request, urllib.parse, urllib.error, http.client, json, socket, oauth.oauth as oauth, urllib.parse, string
+import hashlib, urllib.request, urllib.parse, urllib.error, http.client, json, socket, oauth.oauth as oauth, urllib.parse, string
 
 class SenseAPI:
 	"""
@@ -1423,7 +1423,7 @@ def MD5Hash(password):
 		
 		@return (string) - Md5 hash of password.
 	"""
-	md5_password = md5.new(password)
+	md5_password = hashlib.md5(password.encode('utf-8'))
 	password_md5 = md5_password.hexdigest()
 	return password_md5
 
