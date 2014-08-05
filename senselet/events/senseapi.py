@@ -204,7 +204,7 @@ class SenseAPI:
 		
 		for h in resp_headers:
 			self.__headers__.update({h[0]:h[1]})
-		self.__headers__ = dict(list(zip(list(map(string.lower, list(self.__headers__.keys()))), list(self.__headers__.values()))))
+		self.__headers__ = dict(list(zip(list(map(str.lower, list(self.__headers__.keys()))), list(self.__headers__.values()))))
 
 		
 		if self.__verbose__:
