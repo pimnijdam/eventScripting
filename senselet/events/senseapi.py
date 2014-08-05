@@ -196,7 +196,7 @@ class SenseAPI:
 
 		self.__headers__	= {}
 		
-		self.__response__ 	= result.read()
+		self.__response__ 	= result.read().decode()
 		self.__status__	= result.status
 		resp_headers	= result.getheaders()
 		
